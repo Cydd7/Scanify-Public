@@ -74,7 +74,7 @@ def detect_container_vision():
     cnr3 = re.compile(r'(\d{6})')
     cnr4 = re.compile(r'(\d{3})')
     cnr5 = re.compile(r'(\d{1})')
-    cnr6 = re.compile(r'([A-Z]{4})(\d{7})')
+    cnr6 = re.compile(r'([A-Z]{4}\s{0,1}\d{3}\s{0,1}\d{3}\s{0,1}\d{1})')
 
     # Length of texts to maintain iterator
     tSize = len(texts)
