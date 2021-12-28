@@ -60,24 +60,82 @@ def detect_container_vision():
     #Processing the image
     client = vision.ImageAnnotatorClient()
     fn=os.path.join(os.path.dirname(__file__),'cn1.jpeg')
-
     with io.open(fn, 'rb') as image_file:
         content = image_file.read()
-
     image = vision.Image(content=content)
-
     response = client.text_detection(image=image)
+
+    # Responses collected in texts list
     texts = response.text_annotations
 
-    ans=texts[0].description
-    ans = ''.join(ans.split())
+    # New alogorithm
+    cnr1 = re.compile(r'[A-Z]{4}')
+    cnr2 = re.compile(r'(\d{7})')
+    cnr3 = re.compile(r'(\d{6})')
+    cnr4 = re.compile(r'(\d{3})')
+    cnr5 = re.compile(r'(\d{1})')
+    cnr6 = re.compile(r'([A-Z]{4})(\d{7})')
 
-    # Using RegEx to find container number
-    containerNoRegex = re.compile(r'([A-Z]{4})(\d{7})')
-    mo = containerNoRegex.search(ans)
-    cont = mo.group(1)+" "+mo.group(2)
+    # Length of texts to maintain iterator
+    tSize = len(texts)
+    # initializing iterator
+    a=-1
+    conNo=""
+    conType=""
 
-    return cont
+    for text in texts:
+        # Increaing iterator
+        a=a+1
+        # print(a)
+        if((a<tSize-1) and cnr1.search(text.description) and len(text.description)==4):
+            if(cnr2.search(texts[a+1].description) and len(texts[a+1].description)==7):
+                conType = "4l 7d"
+                conNo = text.description+" "+texts[a+1].description
+                break
+            elif((a<tSize-2) and cnr3.search(texts[a+1].description) and len(texts[a+1].description)==6):
+                if(cnr5.search(texts[a+2].description) and len(texts[a+2].description)==1):
+                    conType = "4l 6d 1d"
+                    conNo = text.description+" "+texts[a+1].description+texts[a+2].description
+                    break
+                else:
+                    continue
+            elif((a<tSize-3) and cnr4.search(texts[a+1].description) and len(texts[a+1].description)==3):
+                if(cnr4.search(texts[a+2].description) and len(texts[a+2].description)==3):
+                    if(cnr5.search(texts[a+3].description) and len(texts[a+3].description)==1):
+                        conType = "4l 3d 3d 1d"
+                        conNo = text.description+" "+texts[a+1].description+texts[a+2].description+texts[a+3].description
+                        break
+                    else:
+                        continue
+                else:
+                    continue
+            else:
+                continue
+        elif(cnr6.search(text.description) and len(text.description)==11):
+            conType = "4l7d"
+            conNo = text[:4].description+" "+text[4:].description
+            break
+        else:
+            continue
+
+    if(conNo):
+        return conNo,conType
+    else:
+        conNo = "Try again"
+
+    return conNo,conType
+
+    # # Old alogorithm
+    # ans=texts[0].description
+    # ans = ''.join(ans.split())
+    #
+    # # Using RegEx to find container number
+    # containerNoRegex = re.compile(r'([A-Z]{4})(\d{7})')
+    # mo = containerNoRegex.search(ans)
+    # conNo = mo.group(1)+" "+mo.group(2)
+    # return conNo
+
+#______________________________________________________________________________
 
 def detect_vehicle_plate_vision():
     # Creating GOOGLE_APPLICATION_CREDENTIALS enviroment from
@@ -139,11 +197,11 @@ def detectcn():
     #file6.FetchMetadata(field='permissions')
 
     # Returning container number from function detect_container_vision in textr
-    textr=detect_container_vision()
+    textr,textType=detect_container_vision()
     # Update the text in the sheet from here only
     sheet.update_cell(row, 2, textr)
 
-    return "Done Container"
+    return textType+" Done"
 
 # Creating an endpoint to detect vehicle plate image by taking in arguments:
 # id -> Drive id of the uploaded image
