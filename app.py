@@ -199,7 +199,7 @@ def detectcn():
     # Returning container number from function detect_container_vision in textr
     textr,textType=detect_container_vision()
     # Update the text in the sheet from here only
-    sheet.update_cell(row, 2, textr)
+    sheet.update_cell(row, 3, textr)
 
     return textType+" Done"
 
@@ -227,7 +227,7 @@ def detectvp():
     # Returning container number from function detect_vehicle_plate_vision in textr
     textr=detect_vehicle_plate_vision()
     #Update the text in the sheet from here only
-    sheet.update_cell(row, 3, textr)
+    sheet.update_cell(row, 4, textr)
 
     return "Done Vehicle Plate"
 
